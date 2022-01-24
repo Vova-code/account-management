@@ -1,36 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useContext } from 'react'
+import AppContext from '../utils/AppContext'
 
-import { entries } from '../utils/entries'
 import MovementListBody from './MovementListBody'
 
 const AccountMovement = () => {
-  const [inbounds, setInbounds] = useState([])
-  const [outbounds, setOutbounds] = useState([])
+  const { entryList, inbounds, outbounds } = useContext(AppContext)
 
-  useEffect(() => {
-    entries.map((entry) => {
-      if (entry.amount < 0) {
-        setOutbounds((prevOutbounds) => [...prevOutbounds, entry])
-      } else {
-        setInbounds((prevInbounds) => [...prevInbounds, entry])
-      }
-    })
-  }, [])
+  const displayBalance = useCallback(() => {
+    return inbounds + outbounds
+  }, [inbounds, outbounds])
 
-  const displayTotal = (amountList) => {
-    let totalAmount = 0
-    amountList.map((outbound) => {
-      totalAmount += outbound.amount
-    })
+  const balanceColor = () => {
+    if (displayBalance() === 0) {
+      return 'bg-white'
+    } else if (displayBalance() > 0) {
+      return 'bg-emerald-100'
+    }
 
-    return totalAmount
+    return 'bg-red-200'
   }
+  const balanceTextColor = () => {
+    if (displayBalance() === 0) {
+      return 'text-gray-300'
+    } else if (displayBalance() > 0) {
+      return 'text-green-600'
+    }
 
-  const displayBalance = () => {
-    return displayTotal(inbounds) + displayTotal(outbounds)
+    return 'text-red-200'
   }
-
-  const balanceColor = displayBalance() > 0 ? 'bg-emerald-100' : 'bg-red-200'
 
   return (
     <div className="flex flex-col w-3/5">
@@ -55,7 +52,7 @@ const AccountMovement = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200 w-full">
-                {entries.map((entry) => (
+                {entryList.map((entry) => (
                   <MovementListBody key={entry.id} entry={entry} />
                 ))}
               </tbody>
@@ -76,28 +73,30 @@ const AccountMovement = () => {
                 </tr>
                 <tr scope="row" className="w-full">
                   <td scope="col" className="px-6 py-4 bg-white text-right">
-                    {displayTotal(inbounds).toLocaleString('fr-FR', {
+                    {inbounds.toLocaleString('fr-FR', {
                       currency: 'EUR',
                       style: 'currency',
                       maximumFractionDigits: 2,
                     })}
                   </td>
                   <td scope="col" className="px-6 py-4 bg-white text-right">
-                    {displayTotal(outbounds).toLocaleString('fr-FR', {
+                    {outbounds.toLocaleString('fr-FR', {
                       currency: 'EUR',
                       style: 'currency',
                       maximumFractionDigits: 2,
                     })}
                   </td>
                 </tr>
-                <tr className={balanceColor}>
+                <tr className={`${balanceColor()} font-medium`}>
                   <td colSpan="2" className="px-6 py-2 text-center">
                     <p className="mb-2">Résultat</p>
-                    <p>{displayBalance().toLocaleString('fr-FR', {
-                      currency: 'EUR',
-                      style: 'currency',
-                      maximumFractionDigits: 2,
-                    })}</p>
+                    <p className={balanceTextColor()}>
+                      {displayBalance().toLocaleString('fr-FR', {
+                        currency: 'EUR',
+                        style: 'currency',
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
                   </td>
                 </tr>
               </tfoot>

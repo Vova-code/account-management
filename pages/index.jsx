@@ -3,7 +3,7 @@ import Layout from '../src/components/Layout'
 
 const Home = () => {
   return (
-    <Layout>
+    <Layout isHomePage>
       <main className="min-h-full flex flex-col justify-center items-center py-16">
         <AccountMovement />
       </main>
